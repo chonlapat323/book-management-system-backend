@@ -20,6 +20,8 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import { routeThrottlers } from '../common/config/throttler.config';
 import { BooksService } from './books.service';
 import { CreateBookDto, QueryBookDto, UpdateBookDto } from './dto';
 import {
@@ -70,6 +72,7 @@ export class BooksController {
   @ApiBadRequestResponse({ 
     description: 'รูปแบบข้อมูลไม่ถูกต้อง เช่น page หรือ limit ไม่ใช่ตัวเลข' 
   })
+  @Throttle({ default: { ttl: routeThrottlers.frequent.ttl, limit: routeThrottlers.frequent.limit } })
   async findAll(@Query() query: QueryBookDto): Promise<PaginatedBookResponse> {
     return this.booksService.findAll(query);
   }
@@ -95,6 +98,7 @@ export class BooksController {
   @ApiBadRequestResponse({ 
     description: 'รหัสหนังสือไม่ถูกต้อง' 
   })
+  @Throttle({ default: { ttl: routeThrottlers.frequent.ttl, limit: routeThrottlers.frequent.limit } })
   async findOne(
     @Param('id', new ParseIntPipe({ 
       errorHttpStatusCode: HttpStatus.BAD_REQUEST,
@@ -118,6 +122,11 @@ export class BooksController {
   @ApiBadRequestResponse({ 
     description: 'ข้อมูลไม่ถูกต้อง หรือไม่ครบถ้วน' 
   })
+  @ApiResponse({ 
+    status: 429, 
+    description: 'คุณส่งคำขอมากเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง' 
+  })
+  @Throttle({ default: { ttl: routeThrottlers.secure.ttl, limit: routeThrottlers.secure.limit } })
   async create(@Body() createBookDto: CreateBookDto): Promise<CreateBookResponse> {
     return this.booksService.create(createBookDto);
   }
@@ -143,6 +152,7 @@ export class BooksController {
   @ApiBadRequestResponse({ 
     description: 'รหัสหนังสือหรือข้อมูลไม่ถูกต้อง' 
   })
+  @Throttle({ default: { ttl: routeThrottlers.secure.ttl, limit: routeThrottlers.secure.limit } })
   async update(
     @Param('id', new ParseIntPipe({ 
       errorHttpStatusCode: HttpStatus.BAD_REQUEST,
@@ -175,6 +185,7 @@ export class BooksController {
   @ApiBadRequestResponse({ 
     description: 'รหัสหนังสือไม่ถูกต้อง' 
   })
+  @Throttle({ default: { ttl: routeThrottlers.secure.ttl, limit: routeThrottlers.secure.limit } })
   async remove(
     @Param('id', new ParseIntPipe({ 
       errorHttpStatusCode: HttpStatus.BAD_REQUEST,
