@@ -1,20 +1,55 @@
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Security Headers with Helmet
+  app.use(helmet());
+
   // CORS
   app.enableCors({
-    origin: true, // หรือระบุ domain ที่อนุญาต เช่น ['http://localhost:3000']
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    // อนุญาตเฉพาะ domains ที่กำหนด
+    origin: process.env.NODE_ENV === 'production'
+      ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://paodev.xyz']
+      : ['http://localhost:3000', 'http://localhost:3001'],
+    
+    // อนุญาตเฉพาะ methods ที่ใช้งาน
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    
+    // อนุญาต credentials (cookies, authorization headers)
     credentials: true,
+    
+    // กำหนด headers ที่อนุญาต
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'Access-Control-Allow-Credentials',
+    ],
+    
+    // กำหนด headers ที่ client สามารถเข้าถึงได้
+    exposedHeaders: ['Content-Disposition'],
+    
+    // ระยะเวลาที่ browser จะ cache preflight request (30 นาที)
+    maxAge: 1800,
+    
+    // HTTP status code สำหรับ successful OPTIONS requests
+    optionsSuccessStatus: 204,
   });
 
   // Global Prefix (optional)
   app.setGlobalPrefix('api');
+
+  // Global Exception Filter
+  const httpAdapter = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   // Global Validation Pipe
   app.useGlobalPipes(new ValidationPipe({
@@ -45,10 +80,11 @@ async function bootstrap() {
       showRequestDuration: true,
     },
     customSiteTitle: 'Book Management API Documentation',
+    useGlobalPrefix: false,
   });
 
   // Start Server
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
   console.log(`Swagger documentation is available at: ${await app.getUrl()}/api-docs`);
