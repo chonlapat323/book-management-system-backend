@@ -4,6 +4,19 @@ import { IsInt, IsOptional, IsString, Matches, Max, Min } from 'class-validator'
 
 export class QueryBookDto {
   @ApiProperty({ 
+    description: 'คำค้นหาทั่วไป (ค้นหาจากชื่อหนังสือ, ผู้แต่ง, หรือประเภท)',
+    required: false,
+    example: 'นิยาย',
+  })
+  @IsString({ message: 'คำค้นหาต้องเป็นข้อความ' })
+  @IsOptional()
+  @Matches(/^[ก-๙a-zA-Z0-9\s\-_.,!?()]*$/, {
+    message: 'คำค้นหาต้องไม่มีอักขระพิเศษ ยกเว้น - _ . , ! ? ( )',
+  })
+  @Transform(({ value }) => value?.trim())
+  search?: string;
+
+  @ApiProperty({ 
     description: 'ค้นหาจากชื่อหนังสือ',
     required: false,
     example: 'นิยาย',

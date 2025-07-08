@@ -22,11 +22,33 @@ export class BooksService {
   }
 
   async findAll(query: QueryBookDto): Promise<PaginatedBookResponse> {
-    const { page = 1, limit = 10, title, author } = query;
+    const { page = 1, limit = 10, title, author, genre, search } = query;
     const skip = (page - 1) * limit;
 
     // สร้าง where condition สำหรับ filter
     const where: Prisma.BookWhereInput = {
+      ...(search && {
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: 'insensitive' as Prisma.QueryMode
+            }
+          },
+          {
+            author: {
+              contains: search,
+              mode: 'insensitive' as Prisma.QueryMode
+            }
+          },
+          {
+            genre: {
+              contains: search,
+              mode: 'insensitive' as Prisma.QueryMode
+            }
+          }
+        ]
+      }),
       ...(title && {
         title: {
           contains: title,
@@ -36,6 +58,12 @@ export class BooksService {
       ...(author && {
         author: {
           contains: author,
+          mode: 'insensitive' as Prisma.QueryMode
+        }
+      }),
+      ...(genre && {
+        genre: {
+          contains: genre,
           mode: 'insensitive' as Prisma.QueryMode
         }
       })

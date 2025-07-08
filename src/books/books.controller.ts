@@ -7,8 +7,8 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query
 } from '@nestjs/common';
 import {
@@ -51,6 +51,11 @@ export class BooksController {
     name: 'author', 
     required: false, 
     description: 'ค้นหาจากชื่อผู้แต่ง' 
+  })
+  @ApiQuery({ 
+    name: 'genre', 
+    required: false, 
+    description: 'ค้นหาจากประเภทหนังสือ' 
   })
   @ApiQuery({ 
     name: 'page', 
@@ -131,7 +136,7 @@ export class BooksController {
     return this.booksService.create(createBookDto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ 
     summary: 'Update a book',
     description: 'อัพเดทข้อมูลหนังสือ' 
