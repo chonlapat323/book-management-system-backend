@@ -16,7 +16,7 @@ async function bootstrap() {
     // อนุญาตเฉพาะ domains ที่กำหนด
     origin: process.env.NODE_ENV === 'production'
       ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://paodev.xyz']
-      : ['http://localhost:3000', 'http://localhost:3001'],
+      : ['http://localhost:3000', 'http://localhost:3001', 'https://book.paodev.xyz/'],
     
     // อนุญาตเฉพาะ methods ที่ใช้งาน
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
