@@ -9,7 +9,10 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=11221122
+      - POSTGRES_DB=book_management
+      - DATABASE_URL=postgresql://postgres:11221122@postgres:5432/book_management
       - PORT=3001
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     ports:
